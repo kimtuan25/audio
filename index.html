@@ -7,9 +7,14 @@
   <meta name="description" content="Trang nghe trực tiếp các file WAV đã tải lên GitHub.">
   <style>
     :root{
-      --c1:#FF6600;          /* cam */
+      /* ---- TÙY CHỈNH NHANH ---- */
+      --bg-cycle: 420s;   /* 7 phút mỗi lượt (đi tới hoặc đi lui) */
+      --hue-span: 8deg;   /* biên độ đổi màu cực nhỏ, khó nhận ra */
+      /* ------------------------ */
+
+      --c1:#FF6600;          /* cam dùng cho viền card/button */
       --c2:#FFBF00;          /* vàng cam */
-      --bg:#fff9f0;          /* nền nhạt */
+      --bg:#fff9f0;          /* base cho body */
       --text:#222;
       --muted:#666;
       --radius:14px;
@@ -19,34 +24,53 @@
     }
     *{box-sizing:border-box}
 
+    /* ===== NỀN PASTEL CỰC DỊU (không rainbow) ===== */
     body{
       margin:0;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
       line-height:1.6;color:var(--text);
-      /* Base background rất nhạt để không tranh chấp với hiệu ứng */
-      background:
-        radial-gradient(900px 600px at 15% 0%, rgba(255,102,0,.035), transparent 60%),
-        radial-gradient(900px 600px at 85% 100%, rgba(255,191,0,.035), transparent 60%),
-        linear-gradient(180deg,#fff,var(--bg));
+      background-color:#fffaf6;         /* màu nền gốc rất nhạt */
       min-height:100vh;
-      overflow-x: clip; /* tránh tràn ngang khi có hiệu ứng nền */
+      overflow-x:clip;
+      position:relative;
+    }
+    /* Lớp phủ pastel nhẹ, đổi màu cực chậm bằng hue-rotate */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      z-index:0; pointer-events:none;
+
+      /* Hai vệt pastel rất nhẹ để tạo chiều sâu, không gây rối */
+      background:
+        radial-gradient(1200px 800px at 12% 10%, rgba(255,180,160,.10), transparent 65%),
+        radial-gradient(1200px 800px at 88% 90%, rgba(180,210,255,.12), transparent 65%);
+
+      /* Làm dịu thêm một chút */
+      filter: hue-rotate(0deg) saturate(.95) brightness(1.03);
+
+      /* Đổi màu cực chậm */
+      animation: hueDrift var(--bg-cycle) linear infinite alternate;
+    }
+    @keyframes hueDrift{
+      from{ filter: hue-rotate(0deg)   saturate(.95) brightness(1.03); }
+      to  { filter: hue-rotate(var(--hue-span)) saturate(.95) brightness(1.03); }
+    }
+    @media (prefers-reduced-motion: reduce){
+      body::before{ animation:none; }
     }
 
-    /* Panel nội dung: trong suốt hơn để thấy nền động phía sau */
+    /* ===== PANEL NỘI DUNG (tách nhẹ khỏi nền) ===== */
     .wrap{
       max-width:1100px;margin:28px auto; position:relative; z-index:2;
-      border-radius: 18px;
-      padding: 22px 16px;
-      background: rgba(255,255,255,.18); /* ↓ opacity để nhìn xuyên nền */
-      box-shadow:
-        0 18px 60px rgba(17,24,39,.10),
-        0 6px 18px rgba(17,24,39,.06);
+      border-radius:18px; padding:22px 16px;
+      background: rgba(255,255,255,.22);
+      box-shadow: 0 18px 60px rgba(17,24,39,.10), 0 6px 18px rgba(17,24,39,.06);
     }
     @supports (backdrop-filter: blur(10px)){
-      .wrap{ backdrop-filter: blur(10px) saturate(115%); }
+      .wrap{ backdrop-filter: blur(10px) saturate(112%); }
     }
 
-    /* Title box */
+    /* ===== TITLE ===== */
     .title-box{
       background:linear-gradient(135deg, rgba(255,102,0,.10), rgba(255,191,0,.10));
       border-radius:var(--radius);
@@ -58,13 +82,13 @@
     .title-box h1{margin:0;font-size:1.6rem}
     .title-box p{margin:0;color:var(--muted);font-size:.95rem}
 
-    /* GRID */
+    /* ===== GRID ===== */
     .grid{
       display:flex; flex-wrap:wrap; gap:var(--gap);
       justify-content:center; align-content:flex-start;
     }
 
-    /* Card audio – rõ ràng hơn */
+    /* ===== CARD ===== */
     .card{
       position: relative;
       width:clamp(280px, 31vw, 340px);
@@ -77,40 +101,38 @@
         0 14px 34px rgba(17,24,39,.12),
         0 3px 10px rgba(17,24,39,.07);
       transition:.15s transform, .15s box-shadow, .15s border-width;
-      display:grid;grid-template-rows:auto 1fr;
+      display:grid; grid-template-rows:auto 1fr;
     }
     @supports (backdrop-filter: blur(6px)) {
       .card{ backdrop-filter: blur(6px) saturate(110%); }
     }
     .card:hover{
       transform:translateY(-2px);
-      box-shadow:
-        0 18px 40px rgba(17,24,39,.14),
-        0 4px 12px rgba(17,24,39,.08);
+      box-shadow: 0 18px 40px rgba(17,24,39,.14), 0 4px 12px rgba(17,24,39,.08);
     }
 
     .card-head{
-      display:grid;grid-template-columns:1fr auto auto;align-items:center;
-      column-gap:10px;margin-bottom:10px
+      display:grid; grid-template-columns:1fr auto auto; align-items:center;
+      column-gap:10px; margin-bottom:10px;
     }
-    .name{font-weight:600;word-break:break-all}
+    .name{font-weight:600; word-break:break-all}
     .badge{
-      font-size:.72rem;padding:4px 8px;border-radius:999px;
+      font-size:.72rem; padding:4px 8px; border-radius:999px;
       background:linear-gradient(135deg,var(--c1),var(--c2));
-      color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.10);white-space:nowrap
+      color:#fff; box-shadow:0 6px 18px rgba(0,0,0,.10); white-space:nowrap
     }
-    audio{width:100%;display:block;margin:6px 0 8px}
+    audio{width:100%; display:block; margin:6px 0 8px}
 
-    .links{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+    .links{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px}
     .btn{
-      appearance:none;border:none;padding:8px 12px;border-radius:10px;
+      appearance:none; border:none; padding:8px 12px; border-radius:10px;
       background:
         linear-gradient(#fff,#fff) padding-box,
         linear-gradient(135deg,var(--c1),var(--c2)) border-box;
-      border:2px solid transparent;box-shadow:0 6px 18px rgba(0,0,0,.10);
-      font-size:.92rem;text-decoration:none;color:var(--text);cursor:pointer
+      border:2px solid transparent; box-shadow:0 6px 18px rgba(0,0,0,.10);
+      font-size:.92rem; text-decoration:none; color:var(--text); cursor:pointer
     }
-    .btn:hover{filter:brightness(1.02);transform:translateY(-1px)}
+    .btn:hover{filter:brightness(1.02); transform:translateY(-1px)}
     .btn:focus-visible{outline:2px solid #0002; outline-offset:2px}
 
     /* Card đang phát */
@@ -144,61 +166,30 @@
     .eq i:nth-child(3){ animation-delay: .24s }
     @keyframes bar{ 0%,100%{ height:8px } 50%{ height:16px } }
 
-    /* Reduce motion */
+    /* Giảm chuyển động */
     @media (prefers-reduced-motion: reduce){
-      .card.playing{ animation: none }
-      .eq i{ animation: none }
+      .card.playing{ animation:none }
+      .eq i{ animation:none }
     }
     @media (max-width:640px){
       .title-box h1{font-size:1.35rem}
       .card{width:100%}
       .card-head{grid-template-columns:1fr auto auto}
     }
-
-    /* ================= Rainbow Background (rõ hơn) ================= */
-    .bg-rainbow{
-      position:fixed; inset:0;
-      z-index:0; pointer-events:none; overflow:hidden;
-      opacity:.40; /* ↑ thấy rõ hơn */
-      filter: blur(.8px) saturate(.95) brightness(1.06);
-    }
-    .bg-rainbow .beam{
-      position:absolute; top:0; height:100vh; width:0;
-      transform:rotate(10deg); transform-origin: top right;
-      will-change: transform, box-shadow;
-      animation: slide 90s linear infinite; /* chậm */
-    }
-    @keyframes slide{ from{ right:-25vw } to{ right:125vw } }
-    .bg-rainbow .h{
-      position:absolute; left:0; bottom:0; width:100vw; height:0;
-      box-shadow: 0 0 44vh 30vh rgba(255,255,255,.55); /* ↑ chút */
-    }
-    .bg-rainbow .v{
-      position:absolute; left:0; bottom:0; width:0; height:100vh;
-      box-shadow: 0 0 30vw 20vw rgba(255,255,255,.48);
-    }
-    @media (prefers-reduced-motion: reduce){
-      .bg-rainbow .beam{ animation:none }
-    }
   </style>
 </head>
 <body>
-  <!-- Nền hiệu ứng (nằm dưới .wrap) -->
-  <div class="bg-rainbow" id="bgRainbow" aria-hidden="true">
-    <div class="h"></div>
-    <div class="v"></div>
-  </div>
-
   <div class="wrap">
     <header class="title-box">
       <h1>Nghe trực tiếp các file WAV</h1>
       <p>Chỉ phát <strong>một</strong> file 1 lần.</p>
     </header>
+
     <section class="grid" id="audioGrid"></section>
   </div>
 
   <script>
-    // ===== Data =====
+    // Danh sách file WAV
     const tracks = [
       {file:"00001048741749367417-IB-20250608160322.wav", label:"00001048741749367417-IB-20250608160322.wav"},
       {file:"00001054731749004715-IB-20250604110323.wav", label:"00001054731749004715-IB-20250604110323.wav"},
@@ -207,8 +198,8 @@
       {file:"00001116311748689165-IB-20250531200321.wav", label:"00001116311748689165-IB-20250531200321.wav"}
     ];
 
-    // ===== Render cards =====
     const grid = document.getElementById('audioGrid');
+
     function createCard(t){
       const el = document.createElement('article');
       el.className = 'card';
@@ -226,9 +217,11 @@
       `;
       return el;
     }
+
+    // Render danh sách card
     tracks.forEach(t => grid.appendChild(createCard(t)));
 
-    // ===== Single playback + highlight =====
+    // Đảm bảo chỉ 1 audio phát đồng thời + highlight card
     const audios = new Set();
     function handlePlay(e){
       const current = e.currentTarget;
@@ -245,77 +238,6 @@
       a.addEventListener('pause', handlePause);
       a.addEventListener('ended', handlePause);
     });
-
-    // ===== Rainbow background (rõ hơn) =====
-    (function attachRainbowBackground(){
-      const container = document.getElementById('bgRainbow');
-      if(!container) return;
-
-      // Có thể chỉnh nhanh 3 tham số này:
-      const RAINBOW_COUNT   = 16; // 14–20 là đẹp
-      const ANIMATION_TIME  = 90; // chậm
-      const ROTATE_DEG      = 10;
-
-      const PURPLE = [232,121,249];
-      const BLUE   = [96,165,250];
-      const GREEN  = [94,234,212];
-      const rgba = (arr, a) => `rgba(${arr[0]}, ${arr[1]}, ${arr[2]}, ${a})`;
-
-      const palettes = [
-        [PURPLE, BLUE,   GREEN],
-        [PURPLE, GREEN,  BLUE ],
-        [GREEN,  PURPLE, BLUE ],
-        [GREEN,  BLUE,   PURPLE],
-        [BLUE,   GREEN,  PURPLE],
-        [BLUE,   PURPLE, GREEN ],
-      ];
-
-      // ↑ alpha để thấy rõ hơn
-      const WHITE_A = 0.30;
-      const COLOR_A = 0.30;
-
-      // Tăng nhẹ kích thước vệt sáng
-      const S = {
-        wL1: {x:-110, blur:70, spread:32},
-        c1:  {x:-50,  blur:48, spread:26},
-        c2:  {x:0,    blur:48, spread:26},
-        c3:  {x:50,   blur:48, spread:26},
-        wL2: {x:110,  blur:70, spread:32},
-      };
-
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      for(let i=1; i<=RAINBOW_COUNT; i++){
-        const beam = document.createElement('div');
-        beam.className = 'beam';
-
-        const [c1,c2,c3] = palettes[Math.floor(Math.random()*palettes.length)];
-        const w = `rgba(255,255,255,${WHITE_A})`;
-
-        beam.style.boxShadow = [
-          `${S.wL1.x}px 0 ${S.wL1.blur}px ${S.wL1.spread}px ${w}`,
-          `${S.c1.x}px  0 ${S.c1.blur}px  ${S.c1.spread}px  ${rgba(c1, COLOR_A)}`,
-          `${S.c2.x}px  0 ${S.c2.blur}px  ${S.c2.spread}px  ${rgba(c2, COLOR_A)}`,
-          `${S.c3.x}px  0 ${S.c3.blur}px  ${S.c3.spread}px  ${rgba(c3, COLOR_A)}`,
-          `${S.wL2.x}px 0 ${S.wL2.blur}px ${S.wL2.spread}px ${w}`
-        ].join(', ');
-
-        beam.style.transform = `rotate(${ROTATE_DEG}deg)`;
-        beam.style.transformOrigin = 'top right';
-
-        const duration = ANIMATION_TIME - (ANIMATION_TIME / RAINBOW_COUNT / 2) * i;
-        const delay = -(i / RAINBOW_COUNT * ANIMATION_TIME);
-
-        if(!reduceMotion){
-          beam.style.animationDuration = `${duration}s`;
-          beam.style.animationDelay = `${delay}s`;
-        } else {
-          beam.style.right = '50vw';
-        }
-
-        container.appendChild(beam);
-      }
-    })();
   </script>
 </body>
 </html>
