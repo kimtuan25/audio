@@ -18,22 +18,27 @@
       --shadow-hover:0 16px 36px rgba(0,0,0,.16);
     }
     *{box-sizing:border-box}
+
     body{
       margin:0;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
       line-height:1.6;color:var(--text);
-      /* nền nhạt + mảng sáng làm nổi card */
+      /* Nền nhạt hơn, bớt rối */
       background:
-        radial-gradient(900px 600px at 15% 0%, rgba(255,102,0,.10), transparent 60%),
-        radial-gradient(900px 600px at 85% 100%, rgba(255,191,0,.10), transparent 60%),
+        radial-gradient(900px 600px at 15% 0%, rgba(255,102,0,.04), transparent 60%),
+        radial-gradient(900px 600px at 85% 100%, rgba(255,191,0,.04), transparent 60%),
         linear-gradient(180deg,#fff,var(--bg));
       min-height:100vh;
-
-      /* NEW: tránh tràn ngang do hiệu ứng chạy ngang */
-      overflow-x: clip; /* hoặc overflow-x:hidden */
+      overflow-x: clip; /* tránh tràn ngang khi có hiệu ứng nền */
     }
 
-    .wrap{max-width:1100px;margin:28px auto;padding:0 16px; position:relative; z-index:2}
+    /* Khu vực nội dung có nền mờ nhạt để tách khỏi background động */
+    .wrap{
+      max-width:1100px;margin:28px auto;padding:0 16px; position:relative; z-index:2;
+      background: linear-gradient(to bottom, rgba(255,255,255,.55), rgba(255,255,255,.35));
+      border-radius: 16px;
+      padding: 18px 16px;
+    }
 
     /* Title box */
     .title-box{
@@ -56,20 +61,32 @@
       align-content:flex-start;
     }
 
-    /* Card audio */
+    /* Card audio – làm rõ hơn với kính mờ + bóng sâu */
     .card{
-      position: relative; /* để vẽ hiệu ứng xung quanh */
-      width:clamp(280px, 31vw, 340px); /* 3 cột trên màn hình rộng, 2 cột nếu hẹp */
+      position: relative;
+      width:clamp(280px, 31vw, 340px);
       padding:14px;border-radius:var(--radius);
       background:
-        linear-gradient(#fff,#fff) padding-box,
+        linear-gradient(rgba(255,255,255,.98), rgba(255,255,255,.98)) padding-box,
         linear-gradient(135deg, var(--c1), var(--c2)) border-box;
       border:2px solid transparent;
-      box-shadow:var(--shadow);
+      box-shadow:
+        0 14px 34px rgba(17,24,39,.10),
+        0 3px 10px rgba(17,24,39,.06);
       transition:.15s transform, .15s box-shadow, .15s border-width;
-      display:grid;grid-template-rows:auto 1fr; /* tiêu đề + nội dung */
+      display:grid;grid-template-rows:auto 1fr;
     }
-    .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+    /* Kính mờ – khi trình duyệt hỗ trợ */
+    @supports (backdrop-filter: blur(6px)) {
+      .card{ backdrop-filter: blur(6px) saturate(110%); }
+    }
+
+    .card:hover{
+      transform:translateY(-2px);
+      box-shadow:
+        0 18px 40px rgba(17,24,39,.12),
+        0 4px 12px rgba(17,24,39,.07);
+    }
 
     /* 3 cột: tên | badge | equalizer */
     .card-head{
@@ -99,33 +116,22 @@
     /* Làm nổi bật card đang phát */
     .card.playing{
       transform: translateY(-4px) scale(1.02);
-      border-width: 3px; /* viền dày hơn một chút */
+      border-width: 3px;
       box-shadow:
-        0 0 0 6px rgba(255,102,0,.16),   /* vòng sáng ngoài */
-        0 20px 46px rgba(255,102,0,.28), /* ánh cam ấm */
+        0 0 0 6px rgba(255,102,0,.14),
+        0 22px 48px rgba(17,24,39,.14),
         var(--shadow);
       animation: cardPulse 1.8s ease-in-out infinite;
       background:
         linear-gradient(#fff,#fff) padding-box,
-        /* đảo grad để dễ nhận thấy hơn */
         linear-gradient(135deg, var(--c2), var(--c1)) border-box;
     }
 
     /* Nhịp đập vòng sáng */
     @keyframes cardPulse{
-      0%   { box-shadow: 0 0 0 0 rgba(255,102,0,.22), 0 20px 46px rgba(255,102,0,.28), var(--shadow); }
-      70%  { box-shadow: 0 0 0 12px rgba(255,102,0,0), 0 20px 46px rgba(255,102,0,.28), var(--shadow); }
-      100% { box-shadow: 0 0 0 0 rgba(255,102,0,0), 0 20px 46px rgba(255,102,0,.28), var(--shadow); }
-    }
-
-    /* Tô đậm badge khi đang phát và thêm chữ "Đang phát" */
-    .card.playing .badge{
-      background: linear-gradient(135deg, var(--c2), var(--c1));
-      box-shadow: 0 8px 20px rgba(255,102,0,.18);
-    }
-    .card.playing .badge::after{
-      content: " · Đang phát";
-      font-weight: 600;
+      0%   { box-shadow: 0 0 0 0 rgba(255,102,0,.16), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
+      70%  { box-shadow: 0 0 0 12px rgba(255,102,0,0), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
+      100% { box-shadow: 0 0 0 0 rgba(255,102,0,0), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
     }
 
     /* Equalizer mini cạnh badge */
@@ -155,13 +161,15 @@
       .card-head{grid-template-columns:1fr auto auto}
     }
 
-    /* ------------------------------------------------------------------ */
-    /* NEW: Hiệu ứng Rainbow Background (thuần CSS + JS, không cần SCSS)  */
-    /* ------------------------------------------------------------------ */
+    /* -------------------------------------------------------------- */
+    /* Hiệu ứng Rainbow Background (dịu hơn, chạy chậm hơn)           */
+    /* -------------------------------------------------------------- */
     .bg-rainbow{
       position:fixed; inset:0;
       z-index:0; pointer-events:none; /* nằm dưới, không bắt sự kiện */
       overflow:hidden;
+      opacity:.22;                                /* nhạt bớt toàn cục */
+      filter: blur(1px) saturate(.85) brightness(1.02); /* giảm bão hòa + mềm cạnh */
     }
     .bg-rainbow .beam{
       position:absolute; top:0;
@@ -169,33 +177,31 @@
       transform:rotate(10deg);
       transform-origin: top right;
       will-change: transform, box-shadow;
-      /* box-shadow sẽ được set inline bằng JS để mô phỏng nth($colors, …) */
-      animation: slide 45s linear infinite;
+      animation: slide 90s linear infinite;       /* chạy chậm hơn (45s → 90s) */
     }
     @keyframes slide{
       from { right:-25vw; }
       to   { right:125vw; }
     }
-    /* các vệt sáng “h” và “v” giống SCSS gốc */
+    /* Hai vùng glow nền dịu hơn */
     .bg-rainbow .h{
       position:absolute; left:0; bottom:0;
       width:100vw; height:0;
-      box-shadow: 0 0 50vh 40vh white;
+      box-shadow: 0 0 40vh 28vh rgba(255,255,255,.45);
     }
     .bg-rainbow .v{
       position:absolute; left:0; bottom:0;
       width:0; height:100vh;
-      box-shadow: 0 0 35vw 25vw white;
+      box-shadow: 0 0 28vw 18vw rgba(255,255,255,.40);
     }
 
-    /* Giảm chuyển động khi người dùng chọn giảm motion */
     @media (prefers-reduced-motion: reduce){
       .bg-rainbow .beam{ animation:none }
     }
   </style>
 </head>
 <body>
-  <!-- NEW: Lớp nền hiệu ứng (nằm dưới .wrap) -->
+  <!-- Nền hiệu ứng (nằm dưới .wrap) -->
   <div class="bg-rainbow" id="bgRainbow" aria-hidden="true">
     <div class="h"></div>
     <div class="v"></div>
@@ -211,7 +217,7 @@
   </div>
 
   <script>
-    // Danh sách file WAV (giữ nguyên như bạn đã có)
+    // Danh sách file WAV
     const tracks = [
       {file:"00001048741749367417-IB-20250608160322.wav", label:"00001048741749367417-IB-20250608160322.wav"},
       {file:"00001054731749004715-IB-20250604110323.wav", label:"00001054731749004715-IB-20250604110323.wav"},
@@ -244,7 +250,7 @@
     // Render danh sách card
     tracks.forEach(t => grid.appendChild(createCard(t)));
 
-    // Đảm bảo chỉ 1 audio phát đồng thời + gắn class .playing vào card tương ứng
+    // Đảm bảo chỉ 1 audio phát đồng thời + highlight card
     const audios = new Set();
     function handlePlay(e){
       const current = e.currentTarget;
@@ -255,7 +261,6 @@
     function handlePause(e){
       e.currentTarget.closest('.card')?.classList.remove('playing');
     }
-
     document.querySelectorAll('audio').forEach(a=>{
       audios.add(a);
       a.addEventListener('play', handlePlay);
@@ -263,63 +268,80 @@
       a.addEventListener('ended', handlePause);
     });
 
-    /* ------------------------------------------------------------------ */
-    /* NEW: Sinh hiệu ứng Rainbow bằng JS (mô phỏng SCSS @for + random()) */
-    /* ------------------------------------------------------------------ */
+    /* -------------------------------------------------------------- */
+    /* Sinh hiệu ứng Rainbow (mô phỏng SCSS @for + random())          */
+    /* -------------------------------------------------------------- */
     (function attachRainbowBackground(){
       const container = document.getElementById('bgRainbow');
       if(!container) return;
 
-      // Tùy chỉnh nhanh:
-      const RAINBOW_COUNT = 25;        // tương đương (1..25).each do
-      const ANIMATION_TIME = 45;       // giây (trùng SCSS gốc)
-      const ROTATE_DEG = 10;           // độ nghiêng
-      // Bảng màu (6 hoán vị 3 màu giống SCSS)
-      const purple = 'rgb(232 121 249)';
-      const blue   = 'rgb(96 165 250)';
-      const green  = 'rgb(94 234 212)';
+      // Cấu hình “dịu mắt”
+      const RAINBOW_COUNT   = 14;  // ít tia hơn để đỡ rối (25 → 14)
+      const ANIMATION_TIME  = 90;  // chạy chậm (45s → 90s)
+      const ROTATE_DEG      = 10;
+
+      // Màu gốc (RGB)
+      const PURPLE = [232,121,249];
+      const BLUE   = [96,165,250];
+      const GREEN  = [94,234,212];
+
+      // Hàm tạo rgba với alpha
+      const rgba = (arr, a) => `rgba(${arr[0]}, ${arr[1]}, ${arr[2]}, ${a})`;
+
+      // 6 hoán vị như SCSS
       const palettes = [
-        [purple, blue,   green],
-        [purple, green,  blue ],
-        [green,  purple, blue ],
-        [green,  blue,   purple],
-        [blue,   green,  purple],
-        [blue,   purple, green ],
+        [PURPLE, BLUE,   GREEN],
+        [PURPLE, GREEN,  BLUE ],
+        [GREEN,  PURPLE, BLUE ],
+        [GREEN,  BLUE,   PURPLE],
+        [BLUE,   GREEN,  PURPLE],
+        [BLUE,   PURPLE, GREEN ],
       ];
 
-      // Nếu người dùng chọn giảm chuyển động, ta vẫn render nhưng không animate (CSS lo)
+      // Alpha dịu hơn
+      const WHITE_A = 0.22;   // trắng viền
+      const COLOR_A = 0.22;   // màu
+
+      // Kích thước bóng dịu hơn (↓ blur & spread)
+      const S = {
+        wL1: {x:-90,  blur:60, spread:28},
+        c1:  {x:-40,  blur:40, spread:22},
+        c2:  {x:0,    blur:40, spread:22},
+        c3:  {x:40,   blur:40, spread:22},
+        wL2: {x:90,   blur:60, spread:28},
+      };
+
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       for(let i=1; i<=RAINBOW_COUNT; i++){
         const beam = document.createElement('div');
         beam.className = 'beam';
 
-        // Chọn 1 hoán vị màu ngẫu nhiên (mô phỏng random(6) trong SCSS)
+        // Chọn ngẫu nhiên 1 palette
         const [c1,c2,c3] = palettes[Math.floor(Math.random()*palettes.length)];
+        const w = `rgba(255,255,255,${WHITE_A})`;
 
-        // Mô phỏng box-shadow theo SCSS:
+        // Box-shadow dịu hơn
         beam.style.boxShadow = [
-          '-130px 0 80px 40px white',
-          `-50px 0 50px 25px ${c1}`,
-          `0 0 50px 25px ${c2}`,
-          `50px 0 50px 25px ${c3}`,
-          '130px 0 80px 40px white'
+          `${S.wL1.x}px 0 ${S.wL1.blur}px ${S.wL1.spread}px ${w}`,
+          `${S.c1.x}px  0 ${S.c1.blur}px  ${S.c1.spread}px  ${rgba(c1, COLOR_A)}`,
+          `${S.c2.x}px  0 ${S.c2.blur}px  ${S.c2.spread}px  ${rgba(c2, COLOR_A)}`,
+          `${S.c3.x}px  0 ${S.c3.blur}px  ${S.c3.spread}px  ${rgba(c3, COLOR_A)}`,
+          `${S.wL2.x}px 0 ${S.wL2.blur}px ${S.wL2.spread}px ${w}`
         ].join(', ');
 
-        // Góc nghiêng như SCSS
         beam.style.transform = `rotate(${ROTATE_DEG}deg)`;
         beam.style.transformOrigin = 'top right';
 
-        // Thời lượng mỗi beam (SCSS: $animationtime - $animationtime/$length/2 * $i)
+        // Giữ nhịp lệch nhau nhưng tổng thể chậm hơn
         const duration = ANIMATION_TIME - (ANIMATION_TIME / RAINBOW_COUNT / 2) * i;
-        // Trễ âm để trải đều (SCSS: -#{$i / $length * $animationtime})
         const delay = -(i / RAINBOW_COUNT * ANIMATION_TIME);
 
         if(!reduceMotion){
           beam.style.animationDuration = `${duration}s`;
           beam.style.animationDelay = `${delay}s`;
-        }else{
-          // Nếu giảm motion: cố định beam ở giữa
+        } else {
+          // Nếu giảm motion: giữ beam ở vị trí tĩnh
           beam.style.right = '50vw';
         }
 
