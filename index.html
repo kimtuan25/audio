@@ -1,210 +1,204 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nghe các file ghi âm (WAV)</title>
-  <meta name="description" content="Trang nghe trực tiếp các file WAV đã tải lên GitHub.">
-  <style>
-    :root{
-      /* —— TÙY CHỈNH NHANH —— */
-      --bg-cycle: 420s;   /* 7 phút/lượt */
-      --hue-span: 8deg;   /* biên độ đổi màu */
-      /* ———————————————— */
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nghe các file ghi âm (WAV)</title>
+<meta name="description" content="Trang nghe trực tiếp các file WAV đã tải lên GitHub.">
+<style>
+:root{
+  --bg-cycle: 420s;   /* 7 phút/lượt đổi nền pastel */
+  --hue-span: 8deg;   /* biên độ đổi màu nền */
+  --c1:#FF6600; --c2:#FFBF00;
+  --radius:14px; --gap:18px;
+  --shadow:0 10px 30px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+  --shadow-hover:0 16px 36px rgba(0,0,0,.16);
+}
+*{box-sizing:border-box;margin:0}
 
-      --c1:#FF6600; --c2:#FFBF00;      /* viền card & nút */
-      --text:#222;  --muted:#666;
-      --radius:14px; --gap:18px;
-      --shadow:0 10px 30px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
-      --shadow-hover:0 16px 36px rgba(0,0,0,.16);
-    }
-    *{box-sizing:border-box;margin:0}
+/* ===== NỀN PASTEL CỰC DỊU ===== */
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.6;color:#222; background:#fffaf6;
+  min-height:100vh; overflow-x:clip; position:relative;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(1200px 800px at 12% 10%, rgba(255,180,160,.10), transparent 65%),
+    radial-gradient(1200px 800px at 88% 90%, rgba(180,210,255,.12), transparent 65%);
+  filter:hue-rotate(0deg) saturate(.95) brightness(1.03);
+  animation:hueDrift var(--bg-cycle) linear infinite alternate;
+}
+@keyframes hueDrift{
+  from{filter:hue-rotate(0deg)  saturate(.95) brightness(1.03)}
+  to  {filter:hue-rotate(var(--hue-span)) saturate(.95) brightness(1.03)}
+}
+@media(prefers-reduced-motion:reduce){body::before{animation:none}}
 
-    /* ===== NỀN PASTEL CỰC DỊU ===== */
-    body{
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-      line-height:1.6; color:var(--text);
-      min-height:100vh; overflow-x:clip; position:relative;
-      background:#fffaf6;
-    }
-    body::before{
-      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
-      background:
-        radial-gradient(1200px 800px at 12% 10%, rgba(255,180,160,.10), transparent 65%),
-        radial-gradient(1200px 800px at 88% 90%, rgba(180,210,255,.12), transparent 65%);
-      filter:hue-rotate(0deg) saturate(.95) brightness(1.03);
-      animation:hueDrift var(--bg-cycle) linear infinite alternate;
-    }
-    @keyframes hueDrift{
-      from{filter:hue-rotate(0deg)  saturate(.95) brightness(1.03)}
-      to  {filter:hue-rotate(var(--hue-span)) saturate(.95) brightness(1.03)}
-    }
-    @media (prefers-reduced-motion:reduce){body::before{animation:none}}
+/* ===== BÓNG BAY ===== */
+.background{position:fixed; inset:0; overflow:hidden; z-index:0}
+@keyframes move{to{transform:translate3d(0,0,1px) rotate(360deg)}}
+.ball{
+  position:absolute;width:20vmin;height:20vmin;border-radius:50%;
+  animation:move linear infinite;
+  backface-visibility:hidden;
+  transition:color 6s linear;   /* mượt khi tự đổi màu */
+}
 
-    /* ===== BACKGROUND BÓNG ===== */
-    .background{position:fixed; inset:0; overflow:hidden; z-index:0}
-    @keyframes move{to{transform:translate3d(0,0,1px) rotate(360deg)}}
-    .ball{
-      position:absolute; width:20vmin; height:20vmin; border-radius:50%;
-      animation:move linear infinite; backface-visibility:hidden;
-    }
-    .ball:nth-child(odd){color:#006D5B}   /* xanh đậm */
-    .ball:nth-child(even){color:#FF6F61}  /* cam nhạt */
+/* Quỹ đạo 10 bóng (tránh vùng trung tâm) */
+.ball:nth-child(1){top:77%;left:88%;animation-duration:40s;animation-delay:-3s; transform-origin:16vw -2vh; box-shadow:40vmin 0 5.7vmin currentColor;}
+.ball:nth-child(2){top:42%;left:2%; animation-duration:53s;animation-delay:-29s;transform-origin:-19vw 21vh; box-shadow:-40vmin 0 5.18vmin currentColor;}
+.ball:nth-child(3){top:28%;left:18%;animation-duration:49s;animation-delay:-8s; transform-origin:-22vw 3vh;  box-shadow:40vmin 0 5.25vmin currentColor;}
+.ball:nth-child(4){top:50%;left:79%;animation-duration:26s;animation-delay:-21s;transform-origin:-17vw -6vh; box-shadow:40vmin 0 5.28vmin currentColor;}
+.ball:nth-child(5){top:46%;left:15%;animation-duration:36s;animation-delay:-40s;transform-origin:4vw 0vh;   box-shadow:-40vmin 0 5.96vmin currentColor;}
+.ball:nth-child(6){top:77%;left:16%;animation-duration:31s;animation-delay:-10s;transform-origin:18vw 4vh;  box-shadow:40vmin 0 5.18vmin currentColor;}
+.ball:nth-child(7){top:8%; left:80%;animation-duration:57s;animation-delay:-14s;transform-origin:-32vw 18vh; box-shadow:-40vmin 0 5.4vmin currentColor;}
+.ball:nth-child(8){top:82%;left:5%; animation-duration:61s;animation-delay:-33s;transform-origin:35vw 14vh;  box-shadow:40vmin 0 5.6vmin currentColor;}
+.ball:nth-child(9){top:15%;left:92%;animation-duration:48s;animation-delay:-19s;transform-origin:-28vw -18vh;box-shadow:-40vmin 0 5.1vmin currentColor;}
+.ball:nth-child(10){top:87%;left:92%;animation-duration:52s;animation-delay:-7s; transform-origin:-28vw 26vh; box-shadow:-40vmin 0 5.9vmin currentColor;}
 
-    /* Bóng #1 → #10 (quỹ đạo tránh vùng trung tâm) */
-    .ball:nth-child(1){top:77%; left:88%; animation:move 40s -3s linear infinite;
-      transform-origin:16vw -2vh;  box-shadow:40vmin 0 5.7vmin currentColor;}
-    .ball:nth-child(2){top:42%; left:2%; animation:move 53s -29s linear infinite;
-      transform-origin:-19vw 21vh; box-shadow:-40vmin 0 5.18vmin currentColor;}
-    .ball:nth-child(3){top:28%; left:18%; animation:move 49s -8s linear infinite;
-      transform-origin:-22vw 3vh; box-shadow:40vmin 0 5.25vmin currentColor;}
-    .ball:nth-child(4){top:50%; left:79%; animation:move 26s -21s linear infinite;
-      transform-origin:-17vw -6vh; box-shadow:40vmin 0 5.28vmin currentColor;}
-    .ball:nth-child(5){top:46%; left:15%; animation:move 36s -40s linear infinite;
-      transform-origin:4vw 0vh;   box-shadow:-40vmin 0 5.96vmin currentColor;}
-    .ball:nth-child(6){top:77%; left:16%; animation:move 31s -10s linear infinite;
-      transform-origin:18vw 4vh;  box-shadow:40vmin 0 5.18vmin currentColor;}
-    .ball:nth-child(7){top:8%;  left:80%; animation:move 57s -14s linear infinite;
-      transform-origin:-32vw 18vh; box-shadow:-40vmin 0 5.4vmin currentColor;}
-    .ball:nth-child(8){top:82%; left:5%;  animation:move 61s -33s linear infinite;
-      transform-origin:35vw 14vh;  box-shadow:40vmin 0 5.6vmin currentColor;}
-    .ball:nth-child(9){top:15%; left:92%; animation:move 48s -19s linear infinite;
-      transform-origin:-28vw -18vh;box-shadow:-40vmin 0 5.1vmin currentColor;}
-    .ball:nth-child(10){top:87%; left:92%; animation:move 52s -7s linear infinite;
-      transform-origin:-28vw 26vh; box-shadow:-40vmin 0 5.9vmin currentColor;}
+/* ===== KHUNG NỘI DUNG ===== */
+.wrap{
+  max-width:1100px;margin:28px auto;padding:22px 16px;z-index:2;position:relative;
+  background:rgba(255,255,255,.22);border-radius:18px;
+  box-shadow:0 18px 60px rgba(17,24,39,.10),0 6px 18px rgba(17,24,39,.06);
+}
+@supports(backdrop-filter:blur(10px)){.wrap{backdrop-filter:blur(10px) saturate(112%)}}
 
-    /* ===== KHUNG NỘI DUNG ===== */
-    .wrap{
-      max-width:1100px; margin:28px auto; padding:22px 16px;
-      background:rgba(255,255,255,.22); border-radius:18px; position:relative; z-index:2;
-      box-shadow:0 18px 60px rgba(17,24,39,.10), 0 6px 18px rgba(17,24,39,.06);
-    }
-    @supports(backdrop-filter:blur(10px)){.wrap{backdrop-filter:blur(10px) saturate(112%)}}
+.title-box{
+  background:linear-gradient(135deg,rgba(255,102,0,.10),rgba(255,191,0,.10));
+  border:1px solid rgba(255,102,0,.18);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px 20px;display:grid;row-gap:4px;margin-bottom:20px
+}
+.title-box h1{font-size:1.6rem;margin:0}
+.title-box p{font-size:.95rem;color:#666;margin:0}
 
-    .title-box{
-      background:linear-gradient(135deg,rgba(255,102,0,.10),rgba(255,191,0,.10));
-      border-radius:var(--radius); padding:18px 20px;
-      border:1px solid rgba(255,102,0,.18); box-shadow:var(--shadow);
-      display:grid; row-gap:4px; margin-bottom:20px;
-    }
-    .title-box h1{margin:0;font-size:1.6rem}
-    .title-box p{margin:0;color:var(--muted);font-size:.95rem}
+.grid{display:flex;flex-wrap:wrap;gap:var(--gap);justify-content:center}
 
-    .grid{display:flex;flex-wrap:wrap;gap:var(--gap);justify-content:center}
+/* ===== CARD ===== */
+.card{
+  position:relative;width:clamp(280px,31vw,340px);padding:14px;border-radius:var(--radius);
+  background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,var(--c1),var(--c2)) border-box;
+  border:2px solid transparent;display:grid;grid-template-rows:auto 1fr;
+  box-shadow:0 14px 34px rgba(17,24,39,.12),0 3px 10px rgba(17,24,39,.07);
+  transition:.15s transform,.15s box-shadow;
+}
+@supports(backdrop-filter:blur(6px)){.card{backdrop-filter:blur(6px) saturate(110%)}}
+.card:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(17,24,39,.14),0 4px 12px rgba(17,24,39,.08)}
+.card-head{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;margin-bottom:10px}
+.name{font-weight:600;word-break:break-all}
+.badge{font-size:.72rem;padding:4px 8px;border-radius:999px;background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.10)}
+audio{width:100%;margin:6px 0 8px}
+.links{display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  appearance:none;border:none;padding:8px 12px;border-radius:10px;cursor:pointer;font-size:.92rem;
+  background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,var(--c1),var(--c2)) border-box;
+  border:2px solid transparent;box-shadow:0 6px 18px rgba(0,0,0,.10);
+}
+.btn:hover{filter:brightness(1.02);transform:translateY(-1px)}
+.btn:focus-visible{outline:2px solid #0002;outline-offset:2px}
 
-    /* ===== CARD ===== */
-    .card{
-      position:relative; width:clamp(280px,31vw,340px); padding:14px; border-radius:var(--radius);
-      background:linear-gradient(#fff,#fff) padding-box,
-                 linear-gradient(135deg,var(--c1),var(--c2)) border-box;
-      border:2px solid transparent; display:grid; grid-template-rows:auto 1fr;
-      box-shadow:0 14px 34px rgba(17,24,39,.12),0 3px 10px rgba(17,24,39,.07);
-      transition:.15s transform,.15s box-shadow;
-    }
-    @supports(backdrop-filter:blur(6px)){.card{backdrop-filter:blur(6px) saturate(110%)}}
-    .card:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(17,24,39,.14),0 4px 12px rgba(17,24,39,.08);}
-    .card-head{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;margin-bottom:10px}
-    .name{font-weight:600;word-break:break-all}
-    .badge{font-size:.72rem;padding:4px 8px;border-radius:999px;background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.10)}
-    audio{width:100%;margin:6px 0 8px}
-    .links{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
-    .btn{
-      appearance:none;border:none;padding:8px 12px;border-radius:10px;cursor:pointer;
-      background:linear-gradient(#fff,#fff) padding-box,
-                 linear-gradient(135deg,var(--c1),var(--c2)) border-box;
-      border:2px solid transparent;font-size:.92rem;box-shadow:0 6px 18px rgba(0,0,0,.10);
-    }
-    .btn:hover{filter:brightness(1.02);transform:translateY(-1px)}
-    .btn:focus-visible{outline:2px solid #0002;outline-offset:2px}
+/* Card đang phát */
+.card.playing{
+  transform:translateY(-4px) scale(1.02);border-width:3px;
+  background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,var(--c2),var(--c1)) border-box;
+  box-shadow:0 0 0 6px rgba(255,102,0,.14),0 22px 48px rgba(17,24,39,.14),var(--shadow);
+  animation:cardPulse 1.8s ease-in-out infinite;
+}
+@keyframes cardPulse{
+  0%{box-shadow:0 0 0 0 rgba(255,102,0,.16),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
+  70%{box-shadow:0 0 0 12px rgba(255,102,0,0),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
+  100%{box-shadow:0 0 0 0 rgba(255,102,0,0),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
+}
 
-    /* Card đang phát */
-    .card.playing{
-      transform:translateY(-4px) scale(1.02);border-width:3px;
-      background:linear-gradient(#fff,#fff) padding-box,
-                 linear-gradient(135deg,var(--c2),var(--c1)) border-box;
-      box-shadow:0 0 0 6px rgba(255,102,0,.14),0 22px 48px rgba(17,24,39,.14),var(--shadow);
-      animation:cardPulse 1.8s ease-in-out infinite;
-    }
-    @keyframes cardPulse{
-      0%{box-shadow:0 0 0 0 rgba(255,102,0,.16),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
-      70%{box-shadow:0 0 0 12px rgba(255,102,0,0),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
-      100%{box-shadow:0 0 0 0 rgba(255,102,0,0),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
-    }
+/* Equalizer mini */
+.eq{display:none;align-items:flex-end;gap:3px;margin-left:6px}
+.card.playing .eq{display:inline-flex}
+.eq i{width:3px;height:8px;border-radius:2px;background:linear-gradient(180deg,var(--c1),var(--c2));animation:bar 1s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:.12s}.eq i:nth-child(3){animation-delay:.24s}
+@keyframes bar{0%,100%{height:8px}50%{height:16px}}
 
-    /* Equalizer mini */
-    .eq{display:none;align-items:flex-end;gap:3px;margin-left:6px}
-    .card.playing .eq{display:inline-flex}
-    .eq i{width:3px;height:8px;border-radius:2px;background:linear-gradient(180deg,var(--c1),var(--c2));animation:bar 1s ease-in-out infinite}
-    .eq i:nth-child(2){animation-delay:.12s}.eq i:nth-child(3){animation-delay:.24s}
-    @keyframes bar{0%,100%{height:8px}50%{height:16px}}
-
-    /* Mobile */
-    @media(max-width:640px){
-      .title-box h1{font-size:1.35rem}
-      .card{width:100%}
-      .card-head{grid-template-columns:1fr auto auto}
-    }
-  </style>
+/* Mobile tweak */
+@media(max-width:640px){
+  .title-box h1{font-size:1.35rem}
+  .card{width:100%}
+  .card-head{grid-template-columns:1fr auto auto}
+}
+</style>
 </head>
 <body>
 
-  <!-- Hiệu ứng bóng -->
-  <div class="background" aria-hidden="true">
-    <span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span>
-    <span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span>
-  </div>
+<!-- Hiệu ứng bóng -->
+<div class="background" aria-hidden="true">
+  <span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span>
+  <span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span>
+</div>
 
-  <!-- Nội dung chính -->
-  <div class="wrap">
-    <header class="title-box">
-      <h1>Nghe trực tiếp các file WAV</h1>
-      <p>Chỉ phát <strong>một</strong> file 1 lần.</p>
-    </header>
-    <section class="grid" id="audioGrid"></section>
-  </div>
+<!-- Nội dung chính -->
+<div class="wrap">
+  <header class="title-box">
+    <h1>Nghe trực tiếp các file WAV</h1>
+    <p>Chỉ phát <strong>một</strong> file 1 lần.</p>
+  </header>
+  <section class="grid" id="audioGrid"></section>
+</div>
 
-  <script>
-    /* ===== DATA ===== */
-    const tracks = [
-      {file:"00001048741749367417-IB-20250608160322.wav", label:"00001048741749367417-IB-20250608160322.wav"},
-      {file:"00001054731749004715-IB-20250604110323.wav", label:"00001054731749004715-IB-20250604110323.wav"},
-      {file:"00001060901747654770-IB-20250519210249.wav", label:"00001060901747654770-IB-20250519210249.wav"},
-      {file:"00001078931752214252-IB-20250711150321.wav", label:"00001078931752214252-IB-20250711150321.wav"},
-      {file:"00001116311748689165-IB-20250531200321.wav", label:"00001116311748689165-IB-20250531200321.wav"}
-    ];
+<script>
+/* ===== RENDER WAV CARDS ===== */
+const tracks=[
+  {file:"00001048741749367417-IB-20250608160322.wav",label:"00001048741749367417-IB-20250608160322.wav"},
+  {file:"00001054731749004715-IB-20250604110323.wav",label:"00001054731749004715-IB-20250604110323.wav"},
+  {file:"00001060901747654770-IB-20250519210249.wav",label:"00001060901747654770-IB-20250519210249.wav"},
+  {file:"00001078931752214252-IB-20250711150321.wav",label:"00001078931752214252-IB-20250711150321.wav"},
+  {file:"00001116311748689165-IB-20250531200321.wav",label:"00001116311748689165-IB-20250531200321.wav"}
+];
+const grid=document.getElementById('audioGrid');
+tracks.forEach(t=>{
+  const card=document.createElement('article');
+  card.className='card';
+  card.innerHTML=`
+    <div class="card-head">
+      <div class="name" title="${t.label}">${t.label}</div>
+      <span class="badge">WAV</span>
+      <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+    </div>
+    <audio controls preload="none" src="${t.file}"></audio>
+    <div class="links">
+      <a class="btn" href="${t.file}" download>Tải xuống</a>
+      <a class="btn" href="${t.file}" target="_blank" rel="noopener">Mở trực tiếp</a>
+    </div>`;
+  grid.appendChild(card);
+});
 
-    /* ===== RENDER ===== */
-    const grid = document.getElementById('audioGrid');
-    tracks.forEach(t => {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="card-head">
-          <div class="name" title="${t.label}">${t.label}</div>
-          <span class="badge">WAV</span>
-          <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
-        </div>
-        <audio controls preload="none" src="${t.file}"></audio>
-        <div class="links">
-          <a class="btn" href="${t.file}" download>Tải xuống</a>
-          <a class="btn" href="${t.file}" target="_blank" rel="noopener">Mở trực tiếp</a>
-        </div>`;
-      grid.appendChild(card);
-    });
+/* ===== ĐẢM BẢO CHỈ 1 FILE PHÁT ===== */
+const audios=new Set(document.querySelectorAll('audio'));
+function play(e){
+  audios.forEach(a=>{if(a!==e.currentTarget)a.pause()});
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('playing'));
+  e.currentTarget.closest('.card').classList.add('playing');
+}
+function pause(e){e.currentTarget.closest('.card').classList.remove('playing')}
+audios.forEach(a=>{
+  a.addEventListener('play',play);
+  a.addEventListener('pause',pause);
+  a.addEventListener('ended',pause);
+});
 
-    /* ===== PLAYBACK LOGIC ===== */
-    const audios = new Set(document.querySelectorAll('audio'));
-    function handlePlay(e){
-      audios.forEach(a=>{if(a!==e.currentTarget)a.pause()});
-      document.querySelectorAll('.card').forEach(c=>c.classList.remove('playing'));
-      e.currentTarget.closest('.card').classList.add('playing');
-    }
-    function handlePause(e){e.currentTarget.closest('.card').classList.remove('playing')}
-    audios.forEach(a=>{
-      a.addEventListener('play',handlePlay);
-      a.addEventListener('pause',handlePause);
-      a.addEventListener('ended',handlePause);
-    });
-  </script>
+/* ===== ĐỔI MÀU PASTEL NGẪU NHIÊN CHO BÓNG ===== */
+function pastelHue(){return Math.floor(Math.random()*360)}
+function pastelColor(h){return `hsl(${h}deg 80% 75%)`} // s=80%, l=75% ⇒ pastel
+const balls=document.querySelectorAll('.ball');
+balls.forEach(b=>{
+  const h=pastelHue(); b.dataset.h=h; b.style.color=pastelColor(h);
+});
+/* Mỗi 15s: tăng hue +1° (dịu, hầu như không nhận ra → pastel trôi nhẹ) */
+setInterval(()=>{
+  balls.forEach(b=>{
+    let h=parseFloat(b.dataset.h)||0;
+    h=(h+1)%360; b.dataset.h=h; b.style.color=pastelColor(h);
+  });
+},15000);
+</script>
 </body>
 </html>
