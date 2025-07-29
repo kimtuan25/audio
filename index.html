@@ -6,80 +6,219 @@
   <title>Nghe các file ghi âm (WAV)</title>
   <meta name="description" content="Trang nghe trực tiếp các file WAV đã tải lên GitHub.">
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.6;margin:20px;max-width:820px}
-    h1{font-size:1.6rem;margin:0 0 0.5rem}
-    p.hint{color:#555;margin-top:0}
-    ul{list-style:none;padding-left:0}
-    li{padding:12px 0;border-top:1px solid #eee}
-    audio{display:block;margin:6px 0 4px;width:100%;max-width:780px}
-    .links a{margin-right:10px;text-decoration:none}
-    .links a:hover{text-decoration:underline}
-    footer{margin-top:24px;color:#666;font-size:.9rem}
-    code{background:#f6f8fa;padding:.1rem .3rem;border-radius:4px}
+    :root {
+      --c1: #FF6600; /* cam */
+      --c2: #FFBF00; /* vàng cam */
+      --bg: #fffaf2; /* nền ấm nhẹ */
+      --text: #222;
+      --muted: #666;
+      --radius: 14px;
+      --gap: 18px;
+      --shadow: 0 8px 22px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.06);
+      --shadow-soft: 0 6px 18px rgba(0,0,0,.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at -10% -10%, rgba(255,102,0,.12), transparent 60%),
+        radial-gradient(1000px 700px at 110% -10%, rgba(255,191,0,.12), transparent 60%),
+        radial-gradient(900px 700px at 110% 120%, rgba(255,102,0,.10), transparent 55%),
+        linear-gradient(180deg, #fff, var(--bg));
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1100px; margin: 28px auto; padding: 0 16px; }
+    
+    /* Title box */
+    .title-box {
+      background: linear-gradient(135deg, rgba(255,102,0,.12), rgba(255,191,0,.12));
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,102,0,.15);
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-rows: auto auto;
+      row-gap: 4px;
+    }
+    .title-box h1 { margin: 0; font-size: 1.6rem; }
+    .title-box p { margin: 0; color: var(--muted); font-size: .95rem; }
+    
+    /* Grid 2-cột (tạo 2 hàng cân đối tùy số lượng) */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--gap);
+      align-items: stretch;
+    }
+    
+    /* Card / box audio */
+    .card {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      padding: 14px;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(#fff, #fff) padding-box,
+        linear-gradient(135deg, var(--c1), var(--c2)) border-box;
+      border: 2px solid transparent;
+      box-shadow: var(--shadow);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.15); }
+    
+    .card-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      column-gap: 10px;
+      margin-bottom: 10px;
+    }
+    .name {
+      font-weight: 600;
+      word-break: break-all;
+    }
+    .badge {
+      font-size: .72rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--c1), var(--c2));
+      color: #fff;
+      box-shadow: var(--shadow-soft);
+      white-space: nowrap;
+    }
+    audio { width: 100%; display: block; margin: 6px 0 8px; }
+    
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .btn {
+      appearance: none;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background:
+        linear-gradient(#fff, #fff) padding-box,
+        linear-gradient(135deg, var(--c1), var(--c2)) border-box;
+      border: 2px solid transparent;
+      box-shadow: var(--shadow-soft);
+      font-size: .92rem;
+      text-decoration: none;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .btn:hover { filter: brightness(1.02); transform: translateY(-1px); }
+    
+    /* Trạng thái đang phát */
+    .card.playing {
+      background:
+        linear-gradient(#fff, #fff) padding-box,
+        linear-gradient(135deg, var(--c2), var(--c1)) border-box;
+      box-shadow: 0 14px 30px rgba(255,102,0,.20), var(--shadow);
+    }
+    
+    /* Phần cuối trang */
+    footer.note {
+      margin: 24px 0 40px;
+      color: var(--muted);
+      text-align: center;
+      font-size: .95rem;
+    }
+    
+    /* Responsive: 1 cột khi màn hình hẹp */
+    @media (max-width: 640px) {
+      .title-box h1 { font-size: 1.35rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <h1>Nghe trực tiếp các file WAV</h1>
-  <p class="hint">Đặt file <code>index.html</code> này ở cùng thư mục với các file <code>.wav</code> trong repo public. Bật GitHub Pages để mọi người có thể mở và nghe trực tiếp.</p>
-  <ul>
-    <li>
-      <strong>00001048741749367417-IB-20250608160322.wav</strong>
-      <audio controls preload="none">
-        <source src="00001048741749367417-IB-20250608160322.wav" type="audio/wav">
-        Trình duyệt của bạn không hỗ trợ audio HTML5.
-      </audio>
-      <div class="links">
-        <a href="00001048741749367417-IB-20250608160322.wav" download>⬇ Tải xuống</a>
-        <a href="00001048741749367417-IB-20250608160322.wav" target="_blank" rel="noopener">↗ Mở trực tiếp</a>
-      </div>
-    </li>
-    <li>
-      <strong>00001054731749004715-IB-20250604110323.wav</strong>
-      <audio controls preload="none">
-        <source src="00001054731749004715-IB-20250604110323.wav" type="audio/wav">
-        Trình duyệt của bạn không hỗ trợ audio HTML5.
-      </audio>
-      <div class="links">
-        <a href="00001054731749004715-IB-20250604110323.wav" download>⬇ Tải xuống</a>
-        <a href="00001054731749004715-IB-20250604110323.wav" target="_blank" rel="noopener">↗ Mở trực tiếp</a>
-      </div>
-    </li>
-    <li>
-      <strong>00001060901747654770-IB-20250519210249.wav</strong>
-      <audio controls preload="none">
-        <source src="00001060901747654770-IB-20250519210249.wav" type="audio/wav">
-        Trình duyệt của bạn không hỗ trợ audio HTML5.
-      </audio>
-      <div class="links">
-        <a href="00001060901747654770-IB-20250519210249.wav" download>⬇ Tải xuống</a>
-        <a href="00001060901747654770-IB-20250519210249.wav" target="_blank" rel="noopener">↗ Mở trực tiếp</a>
-      </div>
-    </li>
-    <li>
-      <strong>00001078931752214252-IB-20250711150321.wav</strong>
-      <audio controls preload="none">
-        <source src="00001078931752214252-IB-20250711150321.wav" type="audio/wav">
-        Trình duyệt của bạn không hỗ trợ audio HTML5.
-      </audio>
-      <div class="links">
-        <a href="00001078931752214252-IB-20250711150321.wav" download>⬇ Tải xuống</a>
-        <a href="00001078931752214252-IB-20250711150321.wav" target="_blank" rel="noopener">↗ Mở trực tiếp</a>
-      </div>
-    </li>
-    <li>
-      <strong>00001116311748689165-IB-20250531200321.wav</strong>
-      <audio controls preload="none">
-        <source src="00001116311748689165-IB-20250531200321.wav" type="audio/wav">
-        Trình duyệt của bạn không hỗ trợ audio HTML5.
-      </audio>
-      <div class="links">
-        <a href="00001116311748689165-IB-20250531200321.wav" download>⬇ Tải xuống</a>
-        <a href="00001116311748689165-IB-20250531200321.wav" target="_blank" rel="noopener">↗ Mở trực tiếp</a>
-      </div>
-    </li>
-  </ul>
-  <footer>
-    Gợi ý: WAV thường nặng. Nếu cần tiết kiệm băng thông, cân nhắc chuyển sang MP3/OGG trước khi tải lên.
-  </footer>
+  <div class="wrap">
+    <header class="title-box">
+      <h1>Nghe trực tiếp các file WAV</h1>
+      <p>Đặt <code>index.html</code> cùng thư mục với các file <code>.wav</code>. Bật GitHub Pages để mọi người mở và nghe trực tiếp.</p>
+    </header>
+
+    <section class="grid" id="audioGrid">
+      <!-- JS sẽ render các box ở đây -->
+    </section>
+
+    <footer class="note">
+      Gợi ý: WAV khá nặng. Nếu cần tiết kiệm băng thông, hãy cân nhắc chuyển sang MP3/OGG trước khi tải lên.
+    </footer>
+  </div>
+
+  <script>
+    // Danh sách file cần hiển thị (2 hàng/2 cột tự cân theo màn hình)
+    const tracks = [
+      {file: "00001048741749367417-IB-20250608160322.wav", label: "00001048741749367417-IB-20250608160322.wav"},
+      {file: "00001054731749004715-IB-20250604110323.wav", label: "00001054731749004715-IB-20250604110323.wav"},
+      {file: "00001060901747654770-IB-20250519210249.wav", label: "00001060901747654770-IB-20250519210249.wav"},
+      {file: "00001078931752214252-IB-20250711150321.wav", label: "00001078931752214252-IB-20250711150321.wav"},
+      {file: "00001116311748689165-IB-20250531200321.wav", label: "00001116311748689165-IB-20250531200321.wav"}
+    ];
+    
+    const grid = document.getElementById('audioGrid');
+    
+    function createCard(t) {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-head">
+          <div class="name" title="${t.label}">${t.label}</div>
+          <span class="badge">WAV</span>
+        </div>
+        <audio controls preload="none" src="${t.file}"></audio>
+        <div class="links">
+          <a class="btn" href="${t.file}" download>Tải xuống</a>
+          <a class="btn" href="${t.file}" target="_blank" rel="noopener">Mở trực tiếp</a>
+          <button class="btn copy" type="button" data-link="${t.file}">Sao chép link</button>
+        </div>
+      `;
+      return card;
+    }
+    
+    // Render tất cả card
+    tracks.forEach(t => grid.appendChild(createCard(t)));
+    
+    // Chỉ cho phép 1 audio phát tại một thời điểm + highlight card đang phát
+    const audios = new Set();
+    function handlePlay(e) {
+      const current = e.currentTarget;
+      audios.forEach(a => { if (a !== current) a.pause(); });
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('playing'));
+      current.closest('.card')?.classList.add('playing');
+    }
+    function handlePause(e) {
+      e.currentTarget.closest('.card')?.classList.remove('playing');
+    }
+    document.querySelectorAll('audio').forEach(a => {
+      audios.add(a);
+      a.addEventListener('play', handlePlay);
+      a.addEventListener('pause', handlePause);
+      a.addEventListener('ended', handlePause);
+    });
+    
+    // Nút "Sao chép link"
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.copy');
+      if (!btn) return;
+      const link = btn.getAttribute('data-link');
+      try {
+        await navigator.clipboard.writeText(link);
+        btn.textContent = 'Đã sao chép ✓';
+        setTimeout(() => btn.textContent = 'Sao chép link', 1500);
+      } catch {
+        // Fallback: mở trong tab mới nếu không có Clipboard API
+        window.open(link, '_blank');
+      }
+    });
+  </script>
 </body>
 </html>
