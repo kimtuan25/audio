@@ -7,171 +7,139 @@
   <meta name="description" content="Trang nghe trực tiếp các file WAV đã tải lên GitHub.">
   <style>
     :root{
-      /* ---- TÙY CHỈNH NHANH ---- */
-      --bg-cycle: 420s;   /* 7 phút mỗi lượt (đi tới hoặc đi lui) */
-      --hue-span: 8deg;   /* biên độ đổi màu cực nhỏ, khó nhận ra */
-      /* ------------------------ */
+      /* —— TÙY CHỈNH NHANH —— */
+      --bg-cycle: 420s;   /* 7 phút/lượt */
+      --hue-span: 8deg;   /* biên độ đổi màu */
+      /* ———————————————— */
 
-      --c1:#FF6600;          /* cam dùng cho viền card/button */
-      --c2:#FFBF00;          /* vàng cam */
-      --bg:#fff9f0;          /* base cho body */
-      --text:#222;
-      --muted:#666;
-      --radius:14px;
-      --gap:18px;
+      --c1:#FF6600; --c2:#FFBF00;      /* viền card & nút */
+      --text:#222;  --muted:#666;
+      --radius:14px; --gap:18px;
       --shadow:0 10px 30px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
       --shadow-hover:0 16px 36px rgba(0,0,0,.16);
     }
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;margin:0}
 
-    /* ===== NỀN PASTEL CỰC DỊU (không rainbow) ===== */
+    /* ===== NỀN PASTEL CỰC DỊU ===== */
     body{
-      margin:0;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-      line-height:1.6;color:var(--text);
-      background-color:#fffaf6;         /* màu nền gốc rất nhạt */
-      min-height:100vh;
-      overflow-x:clip;
-      position:relative;
+      line-height:1.6; color:var(--text);
+      min-height:100vh; overflow-x:clip; position:relative;
+      background:#fffaf6;
     }
-    /* Lớp phủ pastel nhẹ, đổi màu cực chậm bằng hue-rotate */
     body::before{
-      content:"";
-      position:fixed; inset:0;
-      z-index:0; pointer-events:none;
-
-      /* Hai vệt pastel rất nhẹ để tạo chiều sâu, không gây rối */
+      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
       background:
         radial-gradient(1200px 800px at 12% 10%, rgba(255,180,160,.10), transparent 65%),
         radial-gradient(1200px 800px at 88% 90%, rgba(180,210,255,.12), transparent 65%);
-
-      /* Làm dịu thêm một chút */
-      filter: hue-rotate(0deg) saturate(.95) brightness(1.03);
-
-      /* Đổi màu cực chậm */
-      animation: hueDrift var(--bg-cycle) linear infinite alternate;
+      filter:hue-rotate(0deg) saturate(.95) brightness(1.03);
+      animation:hueDrift var(--bg-cycle) linear infinite alternate;
     }
     @keyframes hueDrift{
-      from{ filter: hue-rotate(0deg)   saturate(.95) brightness(1.03); }
-      to  { filter: hue-rotate(var(--hue-span)) saturate(.95) brightness(1.03); }
+      from{filter:hue-rotate(0deg)  saturate(.95) brightness(1.03)}
+      to  {filter:hue-rotate(var(--hue-span)) saturate(.95) brightness(1.03)}
     }
-    @media (prefers-reduced-motion: reduce){
-      body::before{ animation:none; }
-    }
+    @media (prefers-reduced-motion:reduce){body::before{animation:none}}
 
-    /* ===== PANEL NỘI DUNG (tách nhẹ khỏi nền) ===== */
+    /* ===== BACKGROUND BÓNG ===== */
+    .background{position:fixed; inset:0; overflow:hidden; z-index:0}
+    @keyframes move{to{transform:translate3d(0,0,1px) rotate(360deg)}}
+    .ball{
+      position:absolute; width:20vmin; height:20vmin; border-radius:50%;
+      animation:move linear infinite; backface-visibility:hidden;
+    }
+    .ball:nth-child(odd){color:#006D5B}   /* xanh đậm */
+    .ball:nth-child(even){color:#FF6F61}  /* cam nhạt */
+
+    /* Bóng #1 → #10 (quỹ đạo tránh vùng trung tâm) */
+    .ball:nth-child(1){top:77%; left:88%; animation:move 40s -3s linear infinite;
+      transform-origin:16vw -2vh;  box-shadow:40vmin 0 5.7vmin currentColor;}
+    .ball:nth-child(2){top:42%; left:2%; animation:move 53s -29s linear infinite;
+      transform-origin:-19vw 21vh; box-shadow:-40vmin 0 5.18vmin currentColor;}
+    .ball:nth-child(3){top:28%; left:18%; animation:move 49s -8s linear infinite;
+      transform-origin:-22vw 3vh; box-shadow:40vmin 0 5.25vmin currentColor;}
+    .ball:nth-child(4){top:50%; left:79%; animation:move 26s -21s linear infinite;
+      transform-origin:-17vw -6vh; box-shadow:40vmin 0 5.28vmin currentColor;}
+    .ball:nth-child(5){top:46%; left:15%; animation:move 36s -40s linear infinite;
+      transform-origin:4vw 0vh;   box-shadow:-40vmin 0 5.96vmin currentColor;}
+    .ball:nth-child(6){top:77%; left:16%; animation:move 31s -10s linear infinite;
+      transform-origin:18vw 4vh;  box-shadow:40vmin 0 5.18vmin currentColor;}
+    .ball:nth-child(7){top:8%;  left:80%; animation:move 57s -14s linear infinite;
+      transform-origin:-32vw 18vh; box-shadow:-40vmin 0 5.4vmin currentColor;}
+    .ball:nth-child(8){top:82%; left:5%;  animation:move 61s -33s linear infinite;
+      transform-origin:35vw 14vh;  box-shadow:40vmin 0 5.6vmin currentColor;}
+    .ball:nth-child(9){top:15%; left:92%; animation:move 48s -19s linear infinite;
+      transform-origin:-28vw -18vh;box-shadow:-40vmin 0 5.1vmin currentColor;}
+    .ball:nth-child(10){top:87%; left:92%; animation:move 52s -7s linear infinite;
+      transform-origin:-28vw 26vh; box-shadow:-40vmin 0 5.9vmin currentColor;}
+
+    /* ===== KHUNG NỘI DUNG ===== */
     .wrap{
-      max-width:1100px;margin:28px auto; position:relative; z-index:2;
-      border-radius:18px; padding:22px 16px;
-      background: rgba(255,255,255,.22);
-      box-shadow: 0 18px 60px rgba(17,24,39,.10), 0 6px 18px rgba(17,24,39,.06);
+      max-width:1100px; margin:28px auto; padding:22px 16px;
+      background:rgba(255,255,255,.22); border-radius:18px; position:relative; z-index:2;
+      box-shadow:0 18px 60px rgba(17,24,39,.10), 0 6px 18px rgba(17,24,39,.06);
     }
-    @supports (backdrop-filter: blur(10px)){
-      .wrap{ backdrop-filter: blur(10px) saturate(112%); }
-    }
+    @supports(backdrop-filter:blur(10px)){.wrap{backdrop-filter:blur(10px) saturate(112%)}}
 
-    /* ===== TITLE ===== */
     .title-box{
-      background:linear-gradient(135deg, rgba(255,102,0,.10), rgba(255,191,0,.10));
-      border-radius:var(--radius);
-      padding:18px 20px;
-      border:1px solid rgba(255,102,0,.18);
-      box-shadow:var(--shadow);
-      display:grid;row-gap:4px;margin-bottom:20px
+      background:linear-gradient(135deg,rgba(255,102,0,.10),rgba(255,191,0,.10));
+      border-radius:var(--radius); padding:18px 20px;
+      border:1px solid rgba(255,102,0,.18); box-shadow:var(--shadow);
+      display:grid; row-gap:4px; margin-bottom:20px;
     }
     .title-box h1{margin:0;font-size:1.6rem}
     .title-box p{margin:0;color:var(--muted);font-size:.95rem}
 
-    /* ===== GRID ===== */
-    .grid{
-      display:flex; flex-wrap:wrap; gap:var(--gap);
-      justify-content:center; align-content:flex-start;
-    }
+    .grid{display:flex;flex-wrap:wrap;gap:var(--gap);justify-content:center}
 
     /* ===== CARD ===== */
     .card{
-      position: relative;
-      width:clamp(280px, 31vw, 340px);
-      padding:14px;border-radius:var(--radius);
-      background:
-        linear-gradient(rgba(255,255,255,.98), rgba(255,255,255,.98)) padding-box,
-        linear-gradient(135deg, var(--c1), var(--c2)) border-box;
-      border:2px solid transparent;
-      box-shadow:
-        0 14px 34px rgba(17,24,39,.12),
-        0 3px 10px rgba(17,24,39,.07);
-      transition:.15s transform, .15s box-shadow, .15s border-width;
-      display:grid; grid-template-rows:auto 1fr;
+      position:relative; width:clamp(280px,31vw,340px); padding:14px; border-radius:var(--radius);
+      background:linear-gradient(#fff,#fff) padding-box,
+                 linear-gradient(135deg,var(--c1),var(--c2)) border-box;
+      border:2px solid transparent; display:grid; grid-template-rows:auto 1fr;
+      box-shadow:0 14px 34px rgba(17,24,39,.12),0 3px 10px rgba(17,24,39,.07);
+      transition:.15s transform,.15s box-shadow;
     }
-    @supports (backdrop-filter: blur(6px)) {
-      .card{ backdrop-filter: blur(6px) saturate(110%); }
-    }
-    .card:hover{
-      transform:translateY(-2px);
-      box-shadow: 0 18px 40px rgba(17,24,39,.14), 0 4px 12px rgba(17,24,39,.08);
-    }
-
-    .card-head{
-      display:grid; grid-template-columns:1fr auto auto; align-items:center;
-      column-gap:10px; margin-bottom:10px;
-    }
-    .name{font-weight:600; word-break:break-all}
-    .badge{
-      font-size:.72rem; padding:4px 8px; border-radius:999px;
-      background:linear-gradient(135deg,var(--c1),var(--c2));
-      color:#fff; box-shadow:0 6px 18px rgba(0,0,0,.10); white-space:nowrap
-    }
-    audio{width:100%; display:block; margin:6px 0 8px}
-
-    .links{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px}
+    @supports(backdrop-filter:blur(6px)){.card{backdrop-filter:blur(6px) saturate(110%)}}
+    .card:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(17,24,39,.14),0 4px 12px rgba(17,24,39,.08);}
+    .card-head{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;margin-bottom:10px}
+    .name{font-weight:600;word-break:break-all}
+    .badge{font-size:.72rem;padding:4px 8px;border-radius:999px;background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.10)}
+    audio{width:100%;margin:6px 0 8px}
+    .links{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
     .btn{
-      appearance:none; border:none; padding:8px 12px; border-radius:10px;
-      background:
-        linear-gradient(#fff,#fff) padding-box,
-        linear-gradient(135deg,var(--c1),var(--c2)) border-box;
-      border:2px solid transparent; box-shadow:0 6px 18px rgba(0,0,0,.10);
-      font-size:.92rem; text-decoration:none; color:var(--text); cursor:pointer
+      appearance:none;border:none;padding:8px 12px;border-radius:10px;cursor:pointer;
+      background:linear-gradient(#fff,#fff) padding-box,
+                 linear-gradient(135deg,var(--c1),var(--c2)) border-box;
+      border:2px solid transparent;font-size:.92rem;box-shadow:0 6px 18px rgba(0,0,0,.10);
     }
-    .btn:hover{filter:brightness(1.02); transform:translateY(-1px)}
-    .btn:focus-visible{outline:2px solid #0002; outline-offset:2px}
+    .btn:hover{filter:brightness(1.02);transform:translateY(-1px)}
+    .btn:focus-visible{outline:2px solid #0002;outline-offset:2px}
 
     /* Card đang phát */
     .card.playing{
-      transform: translateY(-4px) scale(1.02);
-      border-width: 3px;
-      box-shadow:
-        0 0 0 6px rgba(255,102,0,.14),
-        0 22px 48px rgba(17,24,39,.14),
-        var(--shadow);
-      animation: cardPulse 1.8s ease-in-out infinite;
-      background:
-        linear-gradient(#fff,#fff) padding-box,
-        linear-gradient(135deg, var(--c2), var(--c1)) border-box;
+      transform:translateY(-4px) scale(1.02);border-width:3px;
+      background:linear-gradient(#fff,#fff) padding-box,
+                 linear-gradient(135deg,var(--c2),var(--c1)) border-box;
+      box-shadow:0 0 0 6px rgba(255,102,0,.14),0 22px 48px rgba(17,24,39,.14),var(--shadow);
+      animation:cardPulse 1.8s ease-in-out infinite;
     }
     @keyframes cardPulse{
-      0%   { box-shadow: 0 0 0 0 rgba(255,102,0,.16), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
-      70%  { box-shadow: 0 0 0 12px rgba(255,102,0,0), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
-      100% { box-shadow: 0 0 0 0 rgba(255,102,0,0), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
+      0%{box-shadow:0 0 0 0 rgba(255,102,0,.16),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
+      70%{box-shadow:0 0 0 12px rgba(255,102,0,0),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
+      100%{box-shadow:0 0 0 0 rgba(255,102,0,0),0 22px 48px rgba(17,24,39,.14),var(--shadow)}
     }
 
     /* Equalizer mini */
-    .eq{ display:none; align-items:flex-end; gap:3px; margin-left:6px }
-    .card.playing .eq{ display:inline-flex }
-    .eq i{
-      width:3px; height:8px; border-radius:2px;
-      background: linear-gradient(180deg, var(--c1), var(--c2));
-      animation: bar 1s ease-in-out infinite;
-    }
-    .eq i:nth-child(2){ animation-delay: .12s }
-    .eq i:nth-child(3){ animation-delay: .24s }
-    @keyframes bar{ 0%,100%{ height:8px } 50%{ height:16px } }
+    .eq{display:none;align-items:flex-end;gap:3px;margin-left:6px}
+    .card.playing .eq{display:inline-flex}
+    .eq i{width:3px;height:8px;border-radius:2px;background:linear-gradient(180deg,var(--c1),var(--c2));animation:bar 1s ease-in-out infinite}
+    .eq i:nth-child(2){animation-delay:.12s}.eq i:nth-child(3){animation-delay:.24s}
+    @keyframes bar{0%,100%{height:8px}50%{height:16px}}
 
-    /* Giảm chuyển động */
-    @media (prefers-reduced-motion: reduce){
-      .card.playing{ animation:none }
-      .eq i{ animation:none }
-    }
-    @media (max-width:640px){
+    /* Mobile */
+    @media(max-width:640px){
       .title-box h1{font-size:1.35rem}
       .card{width:100%}
       .card-head{grid-template-columns:1fr auto auto}
@@ -179,17 +147,24 @@
   </style>
 </head>
 <body>
+
+  <!-- Hiệu ứng bóng -->
+  <div class="background" aria-hidden="true">
+    <span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span>
+    <span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span>
+  </div>
+
+  <!-- Nội dung chính -->
   <div class="wrap">
     <header class="title-box">
       <h1>Nghe trực tiếp các file WAV</h1>
       <p>Chỉ phát <strong>một</strong> file 1 lần.</p>
     </header>
-
     <section class="grid" id="audioGrid"></section>
   </div>
 
   <script>
-    // Danh sách file WAV
+    /* ===== DATA ===== */
     const tracks = [
       {file:"00001048741749367417-IB-20250608160322.wav", label:"00001048741749367417-IB-20250608160322.wav"},
       {file:"00001054731749004715-IB-20250604110323.wav", label:"00001054731749004715-IB-20250604110323.wav"},
@@ -198,12 +173,12 @@
       {file:"00001116311748689165-IB-20250531200321.wav", label:"00001116311748689165-IB-20250531200321.wav"}
     ];
 
+    /* ===== RENDER ===== */
     const grid = document.getElementById('audioGrid');
-
-    function createCard(t){
-      const el = document.createElement('article');
-      el.className = 'card';
-      el.innerHTML = `
+    tracks.forEach(t => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `
         <div class="card-head">
           <div class="name" title="${t.label}">${t.label}</div>
           <span class="badge">WAV</span>
@@ -213,30 +188,22 @@
         <div class="links">
           <a class="btn" href="${t.file}" download>Tải xuống</a>
           <a class="btn" href="${t.file}" target="_blank" rel="noopener">Mở trực tiếp</a>
-        </div>
-      `;
-      return el;
-    }
+        </div>`;
+      grid.appendChild(card);
+    });
 
-    // Render danh sách card
-    tracks.forEach(t => grid.appendChild(createCard(t)));
-
-    // Đảm bảo chỉ 1 audio phát đồng thời + highlight card
-    const audios = new Set();
+    /* ===== PLAYBACK LOGIC ===== */
+    const audios = new Set(document.querySelectorAll('audio'));
     function handlePlay(e){
-      const current = e.currentTarget;
-      audios.forEach(a => { if(a !== current) a.pause(); });
-      document.querySelectorAll('.card').forEach(c => c.classList.remove('playing'));
-      current.closest('.card')?.classList.add('playing');
+      audios.forEach(a=>{if(a!==e.currentTarget)a.pause()});
+      document.querySelectorAll('.card').forEach(c=>c.classList.remove('playing'));
+      e.currentTarget.closest('.card').classList.add('playing');
     }
-    function handlePause(e){
-      e.currentTarget.closest('.card')?.classList.remove('playing');
-    }
-    document.querySelectorAll('audio').forEach(a=>{
-      audios.add(a);
-      a.addEventListener('play', handlePlay);
-      a.addEventListener('pause', handlePause);
-      a.addEventListener('ended', handlePause);
+    function handlePause(e){e.currentTarget.closest('.card').classList.remove('playing')}
+    audios.forEach(a=>{
+      a.addEventListener('play',handlePlay);
+      a.addEventListener('pause',handlePause);
+      a.addEventListener('ended',handlePause);
     });
   </script>
 </body>
