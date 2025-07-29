@@ -23,26 +23,32 @@
       margin:0;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
       line-height:1.6;color:var(--text);
-      /* Nền nhạt hơn, bớt rối */
+      /* Base background rất nhạt để không tranh chấp với hiệu ứng */
       background:
-        radial-gradient(900px 600px at 15% 0%, rgba(255,102,0,.04), transparent 60%),
-        radial-gradient(900px 600px at 85% 100%, rgba(255,191,0,.04), transparent 60%),
+        radial-gradient(900px 600px at 15% 0%, rgba(255,102,0,.035), transparent 60%),
+        radial-gradient(900px 600px at 85% 100%, rgba(255,191,0,.035), transparent 60%),
         linear-gradient(180deg,#fff,var(--bg));
       min-height:100vh;
       overflow-x: clip; /* tránh tràn ngang khi có hiệu ứng nền */
     }
 
-    /* Khu vực nội dung có nền mờ nhạt để tách khỏi background động */
+    /* Panel nội dung: trong suốt hơn để thấy nền động phía sau */
     .wrap{
-      max-width:1100px;margin:28px auto;padding:0 16px; position:relative; z-index:2;
-      background: linear-gradient(to bottom, rgba(255,255,255,.55), rgba(255,255,255,.35));
-      border-radius: 16px;
-      padding: 18px 16px;
+      max-width:1100px;margin:28px auto; position:relative; z-index:2;
+      border-radius: 18px;
+      padding: 22px 16px;
+      background: rgba(255,255,255,.18); /* ↓ opacity để nhìn xuyên nền */
+      box-shadow:
+        0 18px 60px rgba(17,24,39,.10),
+        0 6px 18px rgba(17,24,39,.06);
+    }
+    @supports (backdrop-filter: blur(10px)){
+      .wrap{ backdrop-filter: blur(10px) saturate(115%); }
     }
 
     /* Title box */
     .title-box{
-      background:linear-gradient(135deg, rgba(255,102,0,.12), rgba(255,191,0,.12));
+      background:linear-gradient(135deg, rgba(255,102,0,.10), rgba(255,191,0,.10));
       border-radius:var(--radius);
       padding:18px 20px;
       border:1px solid rgba(255,102,0,.18);
@@ -52,16 +58,13 @@
     .title-box h1{margin:0;font-size:1.6rem}
     .title-box p{margin:0;color:var(--muted);font-size:.95rem}
 
-    /* GRID: dùng flex để căn giữa hàng cuối */
+    /* GRID */
     .grid{
-      display:flex;
-      flex-wrap:wrap;
-      gap:var(--gap);
-      justify-content:center;
-      align-content:flex-start;
+      display:flex; flex-wrap:wrap; gap:var(--gap);
+      justify-content:center; align-content:flex-start;
     }
 
-    /* Card audio – làm rõ hơn với kính mờ + bóng sâu */
+    /* Card audio – rõ ràng hơn */
     .card{
       position: relative;
       width:clamp(280px, 31vw, 340px);
@@ -71,24 +74,21 @@
         linear-gradient(135deg, var(--c1), var(--c2)) border-box;
       border:2px solid transparent;
       box-shadow:
-        0 14px 34px rgba(17,24,39,.10),
-        0 3px 10px rgba(17,24,39,.06);
+        0 14px 34px rgba(17,24,39,.12),
+        0 3px 10px rgba(17,24,39,.07);
       transition:.15s transform, .15s box-shadow, .15s border-width;
       display:grid;grid-template-rows:auto 1fr;
     }
-    /* Kính mờ – khi trình duyệt hỗ trợ */
     @supports (backdrop-filter: blur(6px)) {
       .card{ backdrop-filter: blur(6px) saturate(110%); }
     }
-
     .card:hover{
       transform:translateY(-2px);
       box-shadow:
-        0 18px 40px rgba(17,24,39,.12),
-        0 4px 12px rgba(17,24,39,.07);
+        0 18px 40px rgba(17,24,39,.14),
+        0 4px 12px rgba(17,24,39,.08);
     }
 
-    /* 3 cột: tên | badge | equalizer */
     .card-head{
       display:grid;grid-template-columns:1fr auto auto;align-items:center;
       column-gap:10px;margin-bottom:10px
@@ -113,7 +113,7 @@
     .btn:hover{filter:brightness(1.02);transform:translateY(-1px)}
     .btn:focus-visible{outline:2px solid #0002; outline-offset:2px}
 
-    /* Làm nổi bật card đang phát */
+    /* Card đang phát */
     .card.playing{
       transform: translateY(-4px) scale(1.02);
       border-width: 3px;
@@ -126,15 +126,13 @@
         linear-gradient(#fff,#fff) padding-box,
         linear-gradient(135deg, var(--c2), var(--c1)) border-box;
     }
-
-    /* Nhịp đập vòng sáng */
     @keyframes cardPulse{
       0%   { box-shadow: 0 0 0 0 rgba(255,102,0,.16), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
       70%  { box-shadow: 0 0 0 12px rgba(255,102,0,0), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
       100% { box-shadow: 0 0 0 0 rgba(255,102,0,0), 0 22px 48px rgba(17,24,39,.14), var(--shadow); }
     }
 
-    /* Equalizer mini cạnh badge */
+    /* Equalizer mini */
     .eq{ display:none; align-items:flex-end; gap:3px; margin-left:6px }
     .card.playing .eq{ display:inline-flex }
     .eq i{
@@ -144,57 +142,41 @@
     }
     .eq i:nth-child(2){ animation-delay: .12s }
     .eq i:nth-child(3){ animation-delay: .24s }
-    @keyframes bar{
-      0%,100%{ height:8px }
-      50%{ height:16px }
-    }
+    @keyframes bar{ 0%,100%{ height:8px } 50%{ height:16px } }
 
-    /* Tôn trọng người dùng nhạy cảm chuyển động */
+    /* Reduce motion */
     @media (prefers-reduced-motion: reduce){
       .card.playing{ animation: none }
       .eq i{ animation: none }
     }
-
     @media (max-width:640px){
       .title-box h1{font-size:1.35rem}
       .card{width:100%}
       .card-head{grid-template-columns:1fr auto auto}
     }
 
-    /* -------------------------------------------------------------- */
-    /* Hiệu ứng Rainbow Background (dịu hơn, chạy chậm hơn)           */
-    /* -------------------------------------------------------------- */
+    /* ================= Rainbow Background (rõ hơn) ================= */
     .bg-rainbow{
       position:fixed; inset:0;
-      z-index:0; pointer-events:none; /* nằm dưới, không bắt sự kiện */
-      overflow:hidden;
-      opacity:.22;                                /* nhạt bớt toàn cục */
-      filter: blur(1px) saturate(.85) brightness(1.02); /* giảm bão hòa + mềm cạnh */
+      z-index:0; pointer-events:none; overflow:hidden;
+      opacity:.40; /* ↑ thấy rõ hơn */
+      filter: blur(.8px) saturate(.95) brightness(1.06);
     }
     .bg-rainbow .beam{
-      position:absolute; top:0;
-      height:100vh; width:0;
-      transform:rotate(10deg);
-      transform-origin: top right;
+      position:absolute; top:0; height:100vh; width:0;
+      transform:rotate(10deg); transform-origin: top right;
       will-change: transform, box-shadow;
-      animation: slide 90s linear infinite;       /* chạy chậm hơn (45s → 90s) */
+      animation: slide 90s linear infinite; /* chậm */
     }
-    @keyframes slide{
-      from { right:-25vw; }
-      to   { right:125vw; }
-    }
-    /* Hai vùng glow nền dịu hơn */
+    @keyframes slide{ from{ right:-25vw } to{ right:125vw } }
     .bg-rainbow .h{
-      position:absolute; left:0; bottom:0;
-      width:100vw; height:0;
-      box-shadow: 0 0 40vh 28vh rgba(255,255,255,.45);
+      position:absolute; left:0; bottom:0; width:100vw; height:0;
+      box-shadow: 0 0 44vh 30vh rgba(255,255,255,.55); /* ↑ chút */
     }
     .bg-rainbow .v{
-      position:absolute; left:0; bottom:0;
-      width:0; height:100vh;
-      box-shadow: 0 0 28vw 18vw rgba(255,255,255,.40);
+      position:absolute; left:0; bottom:0; width:0; height:100vh;
+      box-shadow: 0 0 30vw 20vw rgba(255,255,255,.48);
     }
-
     @media (prefers-reduced-motion: reduce){
       .bg-rainbow .beam{ animation:none }
     }
@@ -212,12 +194,11 @@
       <h1>Nghe trực tiếp các file WAV</h1>
       <p>Chỉ phát <strong>một</strong> file 1 lần.</p>
     </header>
-
     <section class="grid" id="audioGrid"></section>
   </div>
 
   <script>
-    // Danh sách file WAV
+    // ===== Data =====
     const tracks = [
       {file:"00001048741749367417-IB-20250608160322.wav", label:"00001048741749367417-IB-20250608160322.wav"},
       {file:"00001054731749004715-IB-20250604110323.wav", label:"00001054731749004715-IB-20250604110323.wav"},
@@ -226,9 +207,8 @@
       {file:"00001116311748689165-IB-20250531200321.wav", label:"00001116311748689165-IB-20250531200321.wav"}
     ];
 
+    // ===== Render cards =====
     const grid = document.getElementById('audioGrid');
-
-    // Tạo 1 card audio
     function createCard(t){
       const el = document.createElement('article');
       el.className = 'card';
@@ -246,11 +226,9 @@
       `;
       return el;
     }
-
-    // Render danh sách card
     tracks.forEach(t => grid.appendChild(createCard(t)));
 
-    // Đảm bảo chỉ 1 audio phát đồng thời + highlight card
+    // ===== Single playback + highlight =====
     const audios = new Set();
     function handlePlay(e){
       const current = e.currentTarget;
@@ -268,27 +246,21 @@
       a.addEventListener('ended', handlePause);
     });
 
-    /* -------------------------------------------------------------- */
-    /* Sinh hiệu ứng Rainbow (mô phỏng SCSS @for + random())          */
-    /* -------------------------------------------------------------- */
+    // ===== Rainbow background (rõ hơn) =====
     (function attachRainbowBackground(){
       const container = document.getElementById('bgRainbow');
       if(!container) return;
 
-      // Cấu hình “dịu mắt”
-      const RAINBOW_COUNT   = 14;  // ít tia hơn để đỡ rối (25 → 14)
-      const ANIMATION_TIME  = 90;  // chạy chậm (45s → 90s)
+      // Có thể chỉnh nhanh 3 tham số này:
+      const RAINBOW_COUNT   = 16; // 14–20 là đẹp
+      const ANIMATION_TIME  = 90; // chậm
       const ROTATE_DEG      = 10;
 
-      // Màu gốc (RGB)
       const PURPLE = [232,121,249];
       const BLUE   = [96,165,250];
       const GREEN  = [94,234,212];
-
-      // Hàm tạo rgba với alpha
       const rgba = (arr, a) => `rgba(${arr[0]}, ${arr[1]}, ${arr[2]}, ${a})`;
 
-      // 6 hoán vị như SCSS
       const palettes = [
         [PURPLE, BLUE,   GREEN],
         [PURPLE, GREEN,  BLUE ],
@@ -298,17 +270,17 @@
         [BLUE,   PURPLE, GREEN ],
       ];
 
-      // Alpha dịu hơn
-      const WHITE_A = 0.22;   // trắng viền
-      const COLOR_A = 0.22;   // màu
+      // ↑ alpha để thấy rõ hơn
+      const WHITE_A = 0.30;
+      const COLOR_A = 0.30;
 
-      // Kích thước bóng dịu hơn (↓ blur & spread)
+      // Tăng nhẹ kích thước vệt sáng
       const S = {
-        wL1: {x:-90,  blur:60, spread:28},
-        c1:  {x:-40,  blur:40, spread:22},
-        c2:  {x:0,    blur:40, spread:22},
-        c3:  {x:40,   blur:40, spread:22},
-        wL2: {x:90,   blur:60, spread:28},
+        wL1: {x:-110, blur:70, spread:32},
+        c1:  {x:-50,  blur:48, spread:26},
+        c2:  {x:0,    blur:48, spread:26},
+        c3:  {x:50,   blur:48, spread:26},
+        wL2: {x:110,  blur:70, spread:32},
       };
 
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -317,11 +289,9 @@
         const beam = document.createElement('div');
         beam.className = 'beam';
 
-        // Chọn ngẫu nhiên 1 palette
         const [c1,c2,c3] = palettes[Math.floor(Math.random()*palettes.length)];
         const w = `rgba(255,255,255,${WHITE_A})`;
 
-        // Box-shadow dịu hơn
         beam.style.boxShadow = [
           `${S.wL1.x}px 0 ${S.wL1.blur}px ${S.wL1.spread}px ${w}`,
           `${S.c1.x}px  0 ${S.c1.blur}px  ${S.c1.spread}px  ${rgba(c1, COLOR_A)}`,
@@ -333,7 +303,6 @@
         beam.style.transform = `rotate(${ROTATE_DEG}deg)`;
         beam.style.transformOrigin = 'top right';
 
-        // Giữ nhịp lệch nhau nhưng tổng thể chậm hơn
         const duration = ANIMATION_TIME - (ANIMATION_TIME / RAINBOW_COUNT / 2) * i;
         const delay = -(i / RAINBOW_COUNT * ANIMATION_TIME);
 
@@ -341,7 +310,6 @@
           beam.style.animationDuration = `${duration}s`;
           beam.style.animationDelay = `${delay}s`;
         } else {
-          // Nếu giảm motion: giữ beam ở vị trí tĩnh
           beam.style.right = '50vw';
         }
 
