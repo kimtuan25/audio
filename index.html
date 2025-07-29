@@ -54,6 +54,7 @@
 
     /* Card audio */
     .card{
+      position: relative; /* để vẽ hiệu ứng xung quanh */
       width:clamp(280px, 31vw, 340px); /* 3 cột trên màn hình rộng, 2 cột nếu hẹp */
       padding:14px;border-radius:var(--radius);
       background:
@@ -61,13 +62,14 @@
         linear-gradient(135deg, var(--c1), var(--c2)) border-box;
       border:2px solid transparent;
       box-shadow:var(--shadow);
-      transition:.15s transform, .15s box-shadow;
+      transition:.15s transform, .15s box-shadow, .15s border-width;
       display:grid;grid-template-rows:auto 1fr; /* tiêu đề + nội dung */
     }
     .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
 
+    /* 3 cột: tên | badge | equalizer */
     .card-head{
-      display:grid;grid-template-columns:1fr auto;align-items:center;
+      display:grid;grid-template-columns:1fr auto auto;align-items:center;
       column-gap:10px;margin-bottom:10px
     }
     .name{font-weight:600;word-break:break-all}
@@ -88,18 +90,74 @@
       font-size:.92rem;text-decoration:none;color:var(--text);cursor:pointer
     }
     .btn:hover{filter:brightness(1.02);transform:translateY(-1px)}
+    .btn:focus-visible{outline:2px solid #0002; outline-offset:2px}
 
-    /* Trạng thái đang phát */
+    /* Làm nổi bật card đang phát */
     .card.playing{
+      transform: translateY(-4px) scale(1.02);
+      border-width: 3px; /* viền dày hơn một chút */
+      box-shadow:
+        0 0 0 6px rgba(255,102,0,.16),   /* vòng sáng ngoài */
+        0 20px 46px rgba(255,102,0,.28), /* ánh cam ấm */
+        var(--shadow);
+      animation: cardPulse 1.8s ease-in-out infinite;
       background:
         linear-gradient(#fff,#fff) padding-box,
-        linear-gradient(135deg,var(--c2),var(--c1)) border-box;
-      box-shadow:0 14px 32px rgba(255,102,0,.18), var(--shadow);
+        /* đảo grad để dễ nhận thấy hơn */
+        linear-gradient(135deg, var(--c2), var(--c1)) border-box;
+    }
+
+    /* Nhịp đập vòng sáng */
+    @keyframes cardPulse{
+      0%   { box-shadow: 0 0 0 0 rgba(255,102,0,.22), 0 20px 46px rgba(255,102,0,.28), var(--shadow); }
+      70%  { box-shadow: 0 0 0 12px rgba(255,102,0,0), 0 20px 46px rgba(255,102,0,.28), var(--shadow); }
+      100% { box-shadow: 0 0 0 0 rgba(255,102,0,0), 0 20px 46px rgba(255,102,0,.28), var(--shadow); }
+    }
+
+    /* Tô đậm badge khi đang phát và thêm chữ "Đang phát" */
+    .card.playing .badge{
+      background: linear-gradient(135deg, var(--c2), var(--c1));
+      box-shadow: 0 8px 20px rgba(255,102,0,.18);
+    }
+    .card.playing .badge::after{
+      content: " · Đang phát";
+      font-weight: 600;
+    }
+
+    /* Equalizer mini cạnh badge */
+    .eq{ display:none; align-items:flex-end; gap:3px; margin-left:6px }
+    .card.playing .eq{ display:inline-flex }
+    .eq i{
+      width:3px; height:8px; border-radius:2px;
+      background: linear-gradient(180deg, var(--c1), var(--c2));
+      animation: bar 1s ease-in-out infinite;
+    }
+    .eq i:nth-child(2){ animation-delay: .12s }
+    .eq i:nth-child(3){ animation-delay: .24s }
+    @keyframes bar{
+      0%,100%{ height:8px }
+      50%{ height:16px }
+    }
+
+    /* Khi hover trên card đang phát, giữ cảm giác nổi hơn mà không “nhảy” nhiều */
+    .card.playing:hover{
+      transform: translateY(-6px) scale(1.025);
+      box-shadow:
+        0 0 0 8px rgba(255,102,0,.18),
+        0 24px 54px rgba(255,102,0,.30),
+        var(--shadow-hover);
+    }
+
+    /* Tôn trọng người dùng nhạy cảm chuyển động */
+    @media (prefers-reduced-motion: reduce){
+      .card.playing{ animation: none }
+      .eq i{ animation: none }
     }
 
     @media (max-width:640px){
       .title-box h1{font-size:1.35rem}
-      .card{width:100%} /* 1 cột trên mobile */
+      .card{width:100%}
+      .card-head{grid-template-columns:1fr auto auto}
     }
   </style>
 </head>
@@ -107,13 +165,14 @@
   <div class="wrap">
     <header class="title-box">
       <h1>Nghe trực tiếp các file WAV</h1>
+      <p>Chỉ phát <strong>một</strong> bản ghi mỗi lần. Card đang phát sẽ được làm nổi bật.</p>
     </header>
 
-    <section class="grid" id="audioGrid"><!-- JS sẽ render các box --></section>
+    <section class="grid" id="audioGrid"></section>
   </div>
 
   <script>
-    // Danh sách file
+    // Danh sách file WAV (giữ nguyên như bạn đã có)
     const tracks = [
       {file:"00001048741749367417-IB-20250608160322.wav", label:"00001048741749367417-IB-20250608160322.wav"},
       {file:"00001054731749004715-IB-20250604110323.wav", label:"00001054731749004715-IB-20250604110323.wav"},
@@ -124,6 +183,7 @@
 
     const grid = document.getElementById('audioGrid');
 
+    // Tạo 1 card audio
     function createCard(t){
       const el = document.createElement('article');
       el.className = 'card';
@@ -131,6 +191,7 @@
         <div class="card-head">
           <div class="name" title="${t.label}">${t.label}</div>
           <span class="badge">WAV</span>
+          <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
         </div>
         <audio controls preload="none" src="${t.file}"></audio>
         <div class="links">
@@ -141,27 +202,38 @@
       return el;
     }
 
-    // Render
+    // Render danh sách card
     tracks.forEach(t => grid.appendChild(createCard(t)));
 
-    // Chỉ 1 audio phát tại một thời điểm + highlight card đang phát
+    // Đảm bảo chỉ 1 audio phát đồng thời + gắn class .playing vào card tương ứng
     const audios = new Set();
     function handlePlay(e){
       const current = e.currentTarget;
+      // Tạm dừng các audio khác
       audios.forEach(a => { if(a !== current) a.pause(); });
+      // Bỏ highlight các card khác
       document.querySelectorAll('.card').forEach(c => c.classList.remove('playing'));
+      // Thêm highlight cho card hiện tại
       current.closest('.card')?.classList.add('playing');
     }
     function handlePause(e){
+      // Khi pause/ended, bỏ highlight (nếu bạn muốn giữ highlight khi tạm dừng, hãy comment dòng dưới)
       e.currentTarget.closest('.card')?.classList.remove('playing');
     }
-    // gắn listener sau khi render
+
     document.querySelectorAll('audio').forEach(a=>{
       audios.add(a);
       a.addEventListener('play', handlePlay);
       a.addEventListener('pause', handlePause);
       a.addEventListener('ended', handlePause);
     });
+
+    // (Tuỳ chọn) Nếu muốn khi người dùng click ra ngoài tất cả audio đều dừng:
+    // document.addEventListener('click', (ev) => {
+    //   if (!ev.target.closest('.card')) {
+    //     audios.forEach(a => a.pause());
+    //   }
+    // });
   </script>
 </body>
 </html>
